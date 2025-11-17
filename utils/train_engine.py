@@ -33,7 +33,7 @@ def val_model(m, dl, pbar=None):
 
 
 def train(m, tdl, vdl, epochs=100, save_pth=None, scaler=None, 
-          scheduler=None, optimizer=None, criterion=None):
+          scheduler=None, optimizer=None, criterion=None, ext_pbar=None):
     """
     m:          [torch.model] Target model to train
     tdl:        [DataLoader] Training set
@@ -59,7 +59,8 @@ def train(m, tdl, vdl, epochs=100, save_pth=None, scaler=None,
     tik = time.time()   # Timer for total training cost
     log()  
     msg = ''
-    with tqdm(total=epochs) as pbar:
+    disable_nested_pbar = True if ext_pbar else False 
+    with tqdm(total=epochs, disable=disable_nested_pbar) as pbar:
         for epoch in range(epochs):
             m.train()
             total_loss, correct, total = 0, 0, 0
@@ -90,6 +91,8 @@ def train(m, tdl, vdl, epochs=100, save_pth=None, scaler=None,
                 pbar.set_postfix_str(f'{count}/{len(tdl)} | {msg}')
 
             pbar.update(1)
+            if ext_pbar:
+                ext_pbar.set_postfix_str(f'Epoch [{epoch}/{epochs}]')
 
             # Collecting training & validation status 
             train_acc = correct / total
